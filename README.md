@@ -1,2 +1,3 @@
 # rpi-backtests
-Storage for RPI's backtests accessible by all for free online.
+
+Many RPI students have trouble accessing study materials which makes it difficult to gain motivation to actually study. Our goal is to aggregate student materials, starting with backtests, for RPI students in one place, making it easy to access without the need to make an account or go somewhere in person. RPI students can also request their materials to be uploaded so that incoming freshman or returning students will always have the most up to date materials for their specific courses and for their specific professors. One of our main focuses will be figuring out how to prevent irrelevant file uploads, minimizing storage usage, and ultimately having a platform that RPI students can access with maximum uptime. We hope that our platform will be a stepping stone towards a more centralized student resource archive.
