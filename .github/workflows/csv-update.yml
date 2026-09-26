@@ -1,0 +1,21 @@
+# GitHub Actions workflow for tracking changes to the daily CSV.
+
+# TODO: Add a trigger for when the CSV is updated.
+
+# TODO: Add a job to access and process the updated CSV.
+
+# TODO: Decide how to track or handle changes to the CSV.
+
+name: CSV Update
+
+# workflow_dispatch means run only when I tell you to
+on:
+  workflow_dispatch:
+
+# jobs section defines the tasks to be run
+jobs:
+  placeholder:
+    runs-on: ubuntu-latest
+    # individual job configuration
+    steps:
+      - run: echo "Placeholder"
