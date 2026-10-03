@@ -10,7 +10,7 @@
 </head>
 
 <body>
-  <header class="container-fluid bg-secondary">
+  <header class="container-fluid bg-secondary border-bottom border-light sticky-top">
     <nav class="navbar navbar-expand-lg">
       <div class="container-fluid">
         <a class="navbar-brand d-flex align-items-center gap-2" href="#">
@@ -19,7 +19,8 @@
         </a>
         <div class="collpase navbar-collapse" id="navbarScroll">
           <div class="input-group" role="group-search" style="width: 300px;">
-            <input id="search-input" class="form-control me-2" type="search" placeholder="Search" aria-label="Search">
+            <input id="search-input" class="form-control me-2" type="search" placeholder="Search" value="MATP"
+              aria-label="Search">
           </div>
           <ul class="navbar-nav ms-auto my-2 my-lg-0 navbar-nav-scroll" style="--bs-scroll-height: 100px;">
             <li class="nav-item">
@@ -36,17 +37,53 @@
       </div>
     </nav>
   </header>
-  <main class="container-fluid bg-dark">
-
+  <main class="container-fluid bg-dark vh-100">
+    <div id="search-results" class="d-flex flex-column gap-2">
+      <span class="text-light fs-3">Search results for: <span id="search-query">MATP</span></span>
+      <div class="vstack gap-3 mb-5">
+        <div class="card bg-secondary mx-5">
+          <div class="card-header" data-bs-toggle="collapse" data-bs-target="#collapseTable">
+            <span class="text-light fs-3 fw-bold">MATP-4400 </span>
+            <span class="text-light fs-5 fw-medium">Intro To Data Mathematics</span>
+            <span class="text-light fs-6 fw-light"> • 4 credits • Data Intensive II</span>
+          </div>
+          <div class="card-body" data-bs-toggle="collapse" data-bs-target="#collapseTable">
+            <p class="text-light fs-6">This course will center on applications of basic data analysis techniques such as
+              data visualization, classification, clustering, and ridge regression. A case study approach will be used
+              to
+              provide immediate immersion into the problem of understanding high-dimensional data. The course will
+              develop
+              the necessary mathematics to understand and execute the techniques. Each student will execute a mini-data
+              analysis project on a real-world data problem such as from engineering, medicine, and business. </p>
+          </div>
+          <div class="collapse" id="collapseTable">
+            <table class="table table-bordered table-dark">
+              <thead>
+                <tr>
+                  <th scope="col" class="col-10">Backtests</th>
+                  <th scope="col" class="col-2">Uploaded By</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr class="align-middle">
+                  <td><a href="#" class="text-light">MATP-4400-2026-09-29</a></td>
+                  <td>Anonymous</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
   </main>
-  <footer class="container-fluid bg-secondary pb-2">
+  <footer class="container-fluid bg-secondary py-4 fixed-bottom">
     <div class="d-flex flex-column gap-2 align-items-center justify-content-center">
-      <div class="contact-links">
-        <a href="<insert discord link here>">
-          <img src="<insert discord logo here>" width="20px" height="20px" alt="Discord" />
+      <div id="contact-links" class="d-flex gap-4">
+        <a href="https://discord.gg/Ms8r5rjH3">
+          <img src="./discord.png" width="60px" height="60px" alt="Discord" />
         </a>
-        <a href="<insert github link here>">
-          <img src="<insert github logo here>" width="20px" height="20px" alt="GitHub" />
+        <a href="https://github.com/conman4562/rpi-backtests">
+          <img src="./github.png" width="50px" height="50px" alt="GitHub" />
         </a>
       </div>
       <div class="text-light fs-6">Last updated: 2026-09-29</div>
