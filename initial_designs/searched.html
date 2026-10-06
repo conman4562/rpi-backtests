@@ -9,20 +9,24 @@
     crossorigin="anonymous"></script>
 </head>
 
-<body>
+<body class="d-flex flex-column min-vh-100 bg-dark">
   <header class="container-fluid bg-secondary border-bottom border-light sticky-top">
-    <nav class="navbar navbar-expand-lg">
+    <nav class="navbar navbar-expand-lg" data-bs-theme="dark">
       <div class="container-fluid">
         <a class="navbar-brand d-flex align-items-center gap-2" href="#">
           <img src="./logo.png" class="img-thumbnail" width="50px" height="50px" alt="logo" />
           <span class="text-white">RPI Backtests</span>
         </a>
-        <div class="collpase navbar-collapse" id="navbarScroll">
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarScroll"
+          aria-controls="navbarScroll" aria-expanded="false" aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarScroll">
           <div class="input-group" role="group-search" style="width: 300px;">
             <input id="search-input" class="form-control me-2" type="search" placeholder="Search" value="MATP"
               aria-label="Search">
           </div>
-          <ul class="navbar-nav ms-auto my-2 my-lg-0 navbar-nav-scroll" style="--bs-scroll-height: 100px;">
+          <ul class="navbar-nav ms-auto my-2 my-lg-0">
             <li class="nav-item">
               <a class="nav-link text-light fs-5" href="#">Upload</a>
             </li>
@@ -37,7 +41,7 @@
       </div>
     </nav>
   </header>
-  <main class="container-fluid bg-dark vh-100">
+  <main class="container-fluid flex-grow-1">
     <div id="search-results" class="d-flex flex-column gap-2">
       <span class="text-light fs-3">Search results for: <span id="search-query">MATP</span></span>
       <div class="vstack gap-3 mb-5">
@@ -76,7 +80,7 @@
       </div>
     </div>
   </main>
-  <footer class="container-fluid bg-secondary py-4 fixed-bottom">
+  <footer class="container-fluid bg-secondary py-4">
     <div class="d-flex flex-column gap-2 align-items-center justify-content-center">
       <div id="contact-links" class="d-flex gap-4">
         <a href="https://discord.gg/Ms8r5rjH3">
