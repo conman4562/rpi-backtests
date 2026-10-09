@@ -1,0 +1,280 @@
+.home {
+  flex: 1;
+}
+
+.section-label {
+  margin: 0 0 20px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--text-muted);
+  text-align: center;
+}
+
+/* ===== Hero ===== */
+.hero {
+  position: relative;
+  border-bottom: 1px solid var(--border);
+  overflow: hidden;
+}
+
+/* Full-width layer behind the hero content that the logo bounces around in */
+.bounce-layer {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+/* Fixed size so the physics can measure it before the image finishes loading */
+.bouncing-logo {
+  --logo-color: var(--rpi-red);
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 140px;
+  height: 140px;
+  padding: 6px;
+  background: #fff;
+  border: 4px solid var(--logo-color);
+  border-radius: 18px;
+  image-rendering: pixelated;
+  opacity: 0.5;
+  transition: border-color 0.3s;
+  will-change: transform;
+}
+
+.hero-stage {
+  position: relative;
+  z-index: 1;
+  max-width: var(--max-width);
+  min-height: 62vh;
+  margin: 0 auto;
+  padding: 72px 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  overflow: hidden;
+}
+
+.hero-title {
+  margin: 0;
+  font-size: clamp(2.8rem, 8vw, 5rem);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1;
+}
+
+.hero-title span {
+  color: var(--rpi-red);
+}
+
+.hero-tagline {
+  margin: 14px 0 36px;
+  font-size: 1.2rem;
+  color: var(--text-muted);
+}
+
+.hero-links {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 12px;
+}
+
+/* ===== Developers ===== */
+.developers {
+  padding: 56px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+/* Full-width strip that fades out at both edges */
+.marquee {
+  overflow: hidden;
+  mask-image: linear-gradient(to right, transparent, #000 10%, #000 90%, transparent);
+}
+
+.marquee-track {
+  display: flex;
+  width: max-content;
+  /* Vertical room so the card hover lift and shadow aren't clipped */
+  padding-block: 8px;
+  animation: marquee-scroll 50s linear infinite;
+}
+
+.marquee:hover .marquee-track,
+.marquee:focus-within .marquee-track {
+  animation-play-state: paused;
+}
+
+.marquee-group {
+  display: flex;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* Spacing lives on the item (not `gap`) so each group's width includes it and -50% loops exactly */
+.marquee-item {
+  padding-right: 16px;
+}
+
+@keyframes marquee-scroll {
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+/* Reduce motion: no scrolling; show each developer once and let the strip scroll by hand */
+@media (prefers-reduced-motion: reduce) {
+  .marquee {
+    overflow-x: auto;
+    mask-image: none;
+  }
+
+  .marquee-track {
+    animation: none;
+    margin: 0 auto;
+    padding-inline: 24px;
+  }
+
+  .marquee-item[aria-hidden='true'] {
+    display: none;
+  }
+}
+
+.dev-card {
+  width: 240px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 18px 20px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  transition: border-color 0.15s, transform 0.15s;
+}
+
+.dev-card:hover {
+  border-color: var(--rpi-red);
+  transform: translateY(-2px);
+}
+
+.dev-avatar {
+  flex-shrink: 0;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: var(--rpi-red);
+  color: #fff;
+  font-weight: 700;
+}
+
+.dev-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.dev-name {
+  font-weight: 600;
+}
+
+.dev-link {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+.dev-card:hover .dev-link {
+  color: var(--rpi-red);
+}
+
+/* ===== Features playground ===== */
+.features {
+  padding: 56px 24px 72px;
+}
+
+.feature-field {
+  position: relative;
+  max-width: var(--max-width);
+  height: 420px;
+  margin: 0 auto;
+  padding: 0;
+  list-style: none;
+  border: 1.5px dashed var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+/* Positioned by useBouncingBodies via transform */
+.feature-pill {
+  position: absolute;
+  top: 0;
+  left: 0;
+  padding: 14px 26px;
+  background: var(--surface);
+  border: 2px solid var(--text);
+  border-radius: 999px;
+  font-weight: 600;
+  white-space: nowrap;
+  box-shadow: var(--shadow);
+  user-select: none;
+  will-change: transform;
+}
+
+@media (max-width: 640px) {
+  .feature-field {
+    height: 360px;
+  }
+
+  .feature-pill {
+    padding: 10px 18px;
+    font-size: 0.9rem;
+  }
+}
+
+/* ===== Footer ===== */
+.site-footer {
+  padding: 36px 24px;
+  border-top: 1px solid var(--border);
+  background: var(--surface);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  text-align: center;
+  font-size: 0.9rem;
+  color: var(--text-muted);
+}
+
+.footer-logos {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.footer-logo {
+  display: inline-flex;
+  align-items: center;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  color: var(--text);
+}
+
+.footer-logo svg {
+  width: 24px;
+  height: 24px;
+}
+
+.footer-logo:hover,
+.footer-repo:hover {
+  color: var(--rpi-red);
+}
+
+.footer-copy {
+  margin: 0;
+}
