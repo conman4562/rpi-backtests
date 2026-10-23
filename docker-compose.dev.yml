@@ -1,0 +1,76 @@
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.dev
+    env_file:
+      - ./backend/.env
+    ports:
+      - {BACKEND_APP_PORT:-8080}:8080
+    init: true
+    restart: on-failure:5
+    stop_grace_period: 30s
+    healthcheck:
+      test:
+      [
+        "CMD-SHELL",
+        "curl --fail --silent http://localhost:${BACKEND_APP_PORT:-8080}/actuator/health > /dev/null || exit 1"
+      ]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+    develop:
+      watch:
+      - action: sync+restart
+        path: ./backend/src
+        target: /app/src
+        initial_sync: true
+        ignore:
+          - target/
+          - .mvn/
+          - .git/
+          - .idea/
+          - .vscode/
+          - .env
+      - action: rebuild
+        path: ./backend/pom.xml
+      - action: rebuild
+        path: ./backend/mvnw
+      - action: rebuild
+        path: ./backend/.mvn
+      - action: rebuild
+        path: ./backend/Dockerfile.dev
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.dev
+    env_file:
+      - ./frontend/.env
+    ports:
+      - {FRONTEND_APP_PORT:-5173}:5173
+    restart: on-failure:5
+    depends_on:
+      backend:
+        condition: service_healthy
+        restart: true
+    develop:
+      watch:
+        - action: sync
+          path: ./frontend
+          target: /app
+          initial_sync: true
+          ignore:
+            - node_modules/
+            - dist/
+            - package.json
+            - package-lock.json
+            - Dockerfile.dev
+            - .env
+        - action: rebuild
+          path: ./frontend/package.json
+        - action: rebuild
+          path: ./frontend/package-lock.json
+        - action: rebuild
+          path: ./frontend/Dockerfile.dev
