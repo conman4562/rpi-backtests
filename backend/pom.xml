@@ -55,26 +55,26 @@
     </dependency>
 
     <!-- Source: https://mvnrepository.com/artifact/org.springframework.data/spring-data-jpa -->
-  <dependency>
-      <groupId>org.springframework.data</groupId>
-      <artifactId>spring-data-jpa</artifactId>
-      <version>4.1.1</version>
-      <scope>compile</scope>
-  </dependency>
+    <dependency>
+        <groupId>org.springframework.data</groupId>
+        <artifactId>spring-data-jpa</artifactId>
+        <version>4.1.1</version>
+        <scope>compile</scope>
+    </dependency>
 
-  <!-- Source: https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-devtools -->
-  <dependency>
-      <groupId>org.springframework.boot</groupId>
-      <artifactId>spring-boot-devtools</artifactId>
-      <version>4.1.1</version>
-      <scope>compile</scope>
-  </dependency>
+    <!-- Source: https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-devtools -->
+    <dependency>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-devtools</artifactId>
+        <version>4.1.1</version>
+        <scope>compile</scope>
+    </dependency>
 
-  <dependency>
-    <groupId>org.postgresql</groupId>
-    <artifactId>postgresql</artifactId>
-    <scope>runtime</scope>
-  </dependency>
+    <dependency>
+      <groupId>org.postgresql</groupId>
+      <artifactId>postgresql</artifactId>
+      <scope>runtime</scope>
+    </dependency>
 	</dependencies>
 
 	<build>
