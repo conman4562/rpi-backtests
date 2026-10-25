@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Upload | RPI Backtests</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet"
+    integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"
+    integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI"
+    crossorigin="anonymous"></script>
+  <style>
+    /* unsure how to add these effects via bootstrap */
+    #drop-zone {
+      border: 2px dashed var(--bs-light);
+      border-radius: 1rem;
+      min-height: 220px;
+      cursor: pointer;
+      transition: background-color 0.15s, border-color 0.15s;
+    }
+
+    #drop-zone:hover,
+    #drop-zone.dragover {
+      background-color: rgba(255, 255, 255, 0.1);
+      border-color: var(--bs-info);
+    }
+
+    #drop-zone.has-file {
+      border-style: solid;
+    }
+  </style>
+</head>
+
+<body class="d-flex flex-column min-vh-100 bg-dark">
+  <header class="container-fluid bg-secondary border-bottom border-light sticky-top">
+    <nav class="navbar navbar-expand-lg" data-bs-theme="dark">
+      <div class="container-fluid">
+        <a class="navbar-brand d-flex align-items-center gap-2" href="index.html">
+          <img src="./logo.png" class="img-thumbnail" width="50px" height="50px" alt="logo" />
+          <span class="text-white">RPI Backtests</span>
+        </a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarScroll"
+          aria-controls="navbarScroll" aria-expanded="false" aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarScroll">
+          <div class="input-group" role="group-search" style="width: 300px;">
+            <input id="search-input" class="form-control me-2" type="search" placeholder="Search" value=""
+              aria-label="Search">
+          </div>
+          <ul class="navbar-nav ms-auto my-2 my-lg-0">
+            <li class="nav-item">
+              <a class="nav-link text-light fs-5 fw-bold" href="#" aria-current="page">Upload</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link text-light fs-5" href="#">Backtests</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link text-light fs-5" href="#">Login</a>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+  </header>
+
+  <main class="container-fluid flex-grow-1 text-light py-5">
+    <div class="mx-auto" style="max-width: 800px;">
+      <div class="text-center mb-4">
+        <h1 class="m-0">Contribute to RPI Backtests!</h1>
+        <p class="fs-5 fw-light mt-2 mb-0">All uploads are subject to review.</p>
+      </div>
+
+      <form id="upload-form" class="card bg-secondary" data-bs-theme="dark">
+        <div class="card-body p-4 vstack gap-4">
+
+          <!-- Document upload -->
+          <div>
+            <input id="file-input" type="file" class="d-none" accept=".pdf,.png,.jpg,.jpeg" />
+            <div id="drop-zone" role="button" tabindex="0"
+              class="d-flex flex-column align-items-center justify-content-center text-center p-4 gap-1">
+              <span class="fs-1" aria-hidden="true">&#128196;</span>
+              <span class="fs-4 fw-medium">Drag &amp; drop your document here</span>
+              <span class="fs-6 fw-light">or click to browse &bull; PDF, PNG, or JPG &bull; max 20 MB</span>
+            </div>
+          </div>
+
+          <!-- Course details -->
+          <div class="row g-3">
+            <div class="col-md-4">
+              <label for="subject" class="form-label fs-5 fw-medium">Subject</label>
+              <select id="subject" class="form-select" required>
+                <option value="" selected disabled>Select subject</option>
+                <option>CSCI</option>
+                <option>MATH</option>
+                <option>BIOL</option>
+                <option>CHEM</option>
+                <option>PHYS</option>
+                <option>ECON</option>
+                <option>ITWS</option>
+              </select>
+            </div>
+            <div class="col-md-8">
+              <label for="course" class="form-label fs-5 fw-medium">Class</label>
+              <!-- TODO: only show classes for the selected subject -->
+              <select id="course" class="form-select" required>
+                <option value="" selected disabled>Select class</option>
+                <optgroup label="CSCI">
+                  <option>CSCI 1100 Computer Science I</option>
+                  <option>CSCI 1200 Data Structures</option>
+                  <option>CSCI 2200 Foundations of Computer Science</option>
+                  <option>CSCI 2300 Intro to Algorithms</option>
+                  <option>CSCI 2500 Computer Organization</option>
+                  <option>CSCI 2600 Principles of Software</option>
+                </optgroup>
+                <optgroup label="MATH">
+                  <option>MATH 1010 Calculus I</option>
+                  <option>MATH 1020 Calculus II</option>
+                  <option>MATH 2010 Multivariable Calculus</option>
+                  <option>MATH 2400 Differential Equations</option>
+                  <option>MATH 2800 Discrete Structures</option>
+                </optgroup>
+                <optgroup label="BIOL">
+                  <option>BIOL 1010 Introduction to Biology</option>
+                  <option>BIOL 1015 Intro to Biology Lab</option>
+                  <option>BIOL 2120 Genetics</option>
+                  <option>BIOL 2250 Cell Biology</option>
+                </optgroup>
+                <optgroup label="CHEM">
+                  <option>CHEM 1100 Chemistry I</option>
+                  <option>CHEM 1200 Chemistry II</option>
+                  <option>CHEM 2210 Organic Chemistry I</option>
+                </optgroup>
+                <optgroup label="PHYS">
+                  <option>PHYS 1100 Physics I</option>
+                  <option>PHYS 1200 Physics II</option>
+                  <option>PHYS 2510 Intro to Thermal Physics</option>
+                </optgroup>
+                <optgroup label="ECON">
+                  <option>ECON 1200 Intro to Microeconomics</option>
+                  <option>ECON 2020 Intermediate Microeconomics</option>
+                </optgroup>
+                <optgroup label="ITWS">
+                  <option>ITWS 1100 Intro to ITWS</option>
+                  <option>ITWS 2110 Web Systems Development</option>
+                </optgroup>
+              </select>
+            </div>
+
+            <div class="col-md-4">
+              <label for="exam" class="form-label fs-5 fw-medium">Exam</label>
+              <select id="exam" class="form-select" required>
+                <option value="" selected disabled>Select exam</option>
+                <option>Exam 1</option>
+                <option>Exam 2</option>
+                <option>Exam 3</option>
+                <option>Exam 4</option>
+                <option>Final</option>
+              </select>
+            </div>
+            <div class="col-md-4">
+              <label for="semester" class="form-label fs-5 fw-medium">Semester</label>
+              <select id="semester" class="form-select" required>
+                <option value="" selected disabled>Select semester</option>
+                <option>Spring</option>
+                <option>Summer</option>
+                <option>Fall</option>
+              </select>
+            </div>
+            <div class="col-md-4">
+              <label for="year" class="form-label fs-5 fw-medium">Year</label>
+              <select id="year" class="form-select" required>
+                <option value="" selected disabled>Select year</option>
+                <option>2026</option>
+                <option>2025</option>
+                <option>2024</option>
+                <option>2023</option>
+                <option>2022</option>
+                <option>2021</option>
+                <option>2020</option>
+                <option>2019</option>
+                <option>2018</option>
+                <option>2017</option>
+                <option>2016</option>
+                <option>2015</option>
+                <option>2014</option>
+                <option>2013</option>
+                <option>2012</option>
+                <option>2011</option>
+              </select>
+            </div>
+
+            <div class="col-12">
+              <label for="professor" class="form-label fs-5 fw-medium">Professor</label>
+              <input id="professor" type="text" class="form-control" placeholder="e.g. Jane Smith" maxlength="100"
+                autocomplete="off" required />
+            </div>
+          </div>
+
+          <!-- Actions -->
+          <div class="d-flex flex-wrap align-items-center justify-content-between gap-3">
+            <span class="fs-6 fw-light">All fields are required.</span>
+            <div class="d-flex gap-2">
+              <button type="reset" class="btn btn-outline-light px-4">Clear</button>
+              <button type="submit" class="btn btn-light px-5 fw-medium">Upload</button>
+            </div>
+          </div>
+
+        </div>
+      </form>
+    </div>
+  </main>
+
+  <footer class="container-fluid bg-secondary py-4">
+    <div class="d-flex flex-column gap-2 align-items-center justify-content-center">
+      <div id="contact-links" class="d-flex gap-4">
+        <a href="https://discord.gg/Ms8r5rjH3">
+          <img src="./discord.png" width="60px" height="60px" alt="Discord" />
+        </a>
+        <a href="https://github.com/conman4562/rpi-backtests">
+          <img src="./github.png" width="50px" height="50px" alt="GitHub" />
+        </a>
+      </div>
+      <div class="text-light fs-6">Last updated: 2026-09-29</div>
+      <div class="text-light fs-6">© 2026 RPI Backtests</div>
+    </div>
+  </footer>
+
+  <script>
+    const dropZone = document.getElementById('drop-zone');
+    const fileInput = document.getElementById('file-input');
+
+    dropZone.addEventListener('click', () => fileInput.click());
+
+    // TODO: drag & drop handling
+    // TODO: show selected file name/size in the drop zone
+    // TODO: validate file type (PDF/PNG/JPG) and size (max 20 MB? (subject to change based on funding/server costs))
+    // TODO: filter the class dropdown by the selected subject
+    // TODO: require all fields before enabling Upload
+    // TODO: submit the form to the backend and show a success/error message
+  </script>
+</body>
+
+</html>
