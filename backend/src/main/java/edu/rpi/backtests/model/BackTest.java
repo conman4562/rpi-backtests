@@ -7,8 +7,8 @@ import jakarta.persistence.ManyToOne;
 import java.time.OffsetDateTime;
 
 @Entity
-@Table(name = "test")
-public class Test {
+@Table(name = "back_test")
+public class BackTest {
 
    @Id
    @GeneratedValue (strategy = GenerationType.IDENTITY)
@@ -37,9 +37,9 @@ public class Test {
    @JoinColumn(name = "course_id")
    private Course course;
 
-   protected Test() {}
+   protected BackTest() {}
    
-   public Test(Course course, Semester semester, Integer year, String uploader, Boolean anonymous){
+   public BackTest(Course course, Semester semester, Integer year, String uploader, Boolean anonymous){
       this.course = course;
       this.semester = semester;
       this.year = year;

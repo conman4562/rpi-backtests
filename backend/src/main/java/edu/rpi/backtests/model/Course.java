@@ -18,7 +18,7 @@ public class Course {
    private OffsetDateTime createdAt;
 
    @OneToMany(mappedBy = "course")
-   private List<Test> tests = new ArrayList<>();
+   private List<BackTest> tests = new ArrayList<>();
 
    protected Course() {}
 
@@ -27,6 +27,6 @@ public class Course {
    public Long getId() { return id; }
    public String getCode() { return code; }
    public OffsetDateTime getCreatedAt() { return createdAt; }
-   public List<Test> getTests() { return tests; }
+   public List<BackTest> getTests() { return tests; }
 
 }
