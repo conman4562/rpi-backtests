@@ -7,20 +7,37 @@ import jakarta.persistence.ManyToOne;
 import java.util.UUID;
 import java.time.OffsetDateTime;
 
+import org.springframework.data.domain.Persistable;
+
 @Entity
 @Table(name = "back_test")
-public class BackTest {
+public class BackTest implements Persistable<UUID> {
 
+   // Assigned in the constructor (not generated on save) because the R2 file key is built from it
    @Id
-   @GeneratedValue (strategy = GenerationType.UUID)
    private UUID id;
 
+   // Lets save() insert a new row even though the id is already set; see isNew()
+   @Transient
+   private boolean isNew = true;
+
+   // Semester, year and test type are null when the uploaded file name says "unknown"
    @Enumerated (EnumType.STRING)
-   @Column (nullable = false)
+   @Column (nullable = true)
    private Semester semester;
-   
-   @Column (nullable = false)
+
+   @Column (nullable = true)
    private Integer year;
+
+   @Column (nullable = true)
+   private String professor;
+
+   @Column (nullable = true)
+   private String testType;
+
+   @Enumerated (EnumType.STRING)
+   @Column(nullable = false)
+   private TestState state;
 
    @Column (nullable = false)
    private String uploader = "anonymous";
@@ -43,18 +60,33 @@ public class BackTest {
 
    protected BackTest() {}
    
-   public BackTest(Course course, Semester semester, Integer year, String uploader, Boolean anonymous, String fileKey){
+   public BackTest(Course course, Semester semester, String professor, TestState state, Integer year, String uploader, Boolean anonymous, String testType){
+      this.id = UUID.randomUUID();
       this.course = course;
       this.semester = semester;
+      this.professor = professor;
+      this.state = state;
       this.year = year;
       this.uploader = uploader;
       this.anonymous = anonymous;
-      this.fileKey = fileKey;
+      this.testType = testType;
+      this.fileKey = course.getCode() + "_" + id;
    }
 
+   @Override
+   public boolean isNew() { return isNew; }
+
+   @PostLoad
+   @PostPersist
+   void markNotNew() { isNew = false; }
+
+   @Override
    public UUID getId() { return id; }
    public Semester getSemester() { return semester; }
    public Integer getYear() { return year; }
+   public String getProfessor() { return professor; }
+   public String getTestType() { return testType; }
+   public TestState getState() { return state; }
    public String getUploader() { return uploader; }
    public Boolean getAnonymous() { return anonymous; }
    public Boolean getApproved() { return approved; }
