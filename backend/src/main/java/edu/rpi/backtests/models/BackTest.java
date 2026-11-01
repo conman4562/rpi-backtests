@@ -1,4 +1,4 @@
-package edu.rpi.backtests.model;
+package edu.rpi.backtests.models;
 
 import jakarta.persistence.*;
 import jakarta.persistence.FetchType;

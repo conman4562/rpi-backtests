@@ -1,4 +1,4 @@
-package edu.rpi.backtests.model;
+package edu.rpi.backtests.models;
 
 public enum TestState {
    BLANK,

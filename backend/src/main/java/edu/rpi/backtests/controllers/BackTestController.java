@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -14,10 +15,12 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
-import edu.rpi.backtests.dto.BackTestResponse;
+import edu.rpi.backtests.dto.BacktestResponseObject;
+import edu.rpi.backtests.models.BackTest;
 import edu.rpi.backtests.services.BackTestService;
 
 @RestController
@@ -29,26 +32,28 @@ public class BackTestController {
     this.backTestService = backTestService;
   }
 
-  @GetMapping("/courses/{courseId}/backtests")
-  public ResponseEntity<List<BackTestResponse>> getTestsForCourse(@PathVariable UUID courseId) {
-    List<BackTestResponse> tests = backTestService.getTestsForCourse(courseId).stream()
-        .map(BackTestResponse::from)
-        .toList();
-    return ResponseEntity.ok(tests);
+  @GetMapping("/courses/{courseCode}/backtests")
+  public ResponseEntity<List<BacktestResponseObject>> getTestsForCourse(@PathVariable String courseCode) {
+    List<BacktestResponseObject> responseObjects = backTestService.getTestsForCourse(courseCode).stream()
+        .map(BacktestResponseObject::convertBacktestObjectToBacktestResponseObject)
+        .collect(Collectors.toList());
+    return ResponseEntity.ok(responseObjects);
+  }
+  
+  @GetMapping("/backtests/files")
+  public ResponseEntity<Map<String, String>> getFileDownload(@RequestParam UUID testId) {
+    return ResponseEntity.ok(Map.of("url", backTestService.getDownloadUrl(testId)));
   }
 
-  @GetMapping("/backtests/{id}/download")
-  public ResponseEntity<Map<String, String>> getDownloadUrl(@PathVariable UUID id) {
-    return ResponseEntity.ok(Map.of("url", backTestService.getDownloadUrl(id)));
-  }
-
+  // This method is used to seed the database with backtests
   // The file name carries the course, professor, term and test type; see BackTestService.upload
   @PostMapping(value = "/backtests", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-  public ResponseEntity<BackTestResponse> upload(
-      @RequestParam MultipartFile file,
+  public ResponseEntity<BacktestResponseObject> upload(
+      @RequestPart("file") MultipartFile file,
       @RequestParam(defaultValue = "anonymous") String uploader,
       @RequestParam(defaultValue = "false") Boolean anonymous) throws IOException {
-    BackTestResponse created = BackTestResponse.from(backTestService.upload(file, uploader, anonymous));
+    BackTest backTest = backTestService.upload(file, uploader, anonymous);
+    BacktestResponseObject created = BacktestResponseObject.convertBacktestObjectToBacktestResponseObject(backTest);
     return ResponseEntity.status(HttpStatus.CREATED).body(created);
   }
 

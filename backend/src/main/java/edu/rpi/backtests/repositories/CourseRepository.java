@@ -6,7 +6,7 @@ import java.util.UUID;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 
-import edu.rpi.backtests.model.Course;
+import edu.rpi.backtests.models.Course;
 
 public interface CourseRepository extends JpaRepository<Course, UUID> {
    List<Course> findByCodeContainingIgnoreCaseOrNameContainingIgnoreCase(String code, String name);
