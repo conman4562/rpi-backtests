@@ -5,13 +5,14 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Upload | RPI Backtests</title>
+  <!-- Bootstrap 5 styles and JS bundle (collapse/navbar behavior), loaded from the jsDelivr CDN -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet"
     integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"
     integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI"
     crossorigin="anonymous"></script>
   <style>
-    /* unsure how to add these effects via bootstrap */
+    /* Drop zone: dashed box that accepts a dragged or clicked file */
     #drop-zone {
       border: 2px dashed var(--bs-light);
       border-radius: 1rem;
@@ -20,12 +21,14 @@
       transition: background-color 0.15s, border-color 0.15s;
     }
 
+    /* Highlight on hover, and while a file is dragged over it (.dragover is meant to be toggled by JS) */
     #drop-zone:hover,
     #drop-zone.dragover {
       background-color: rgba(255, 255, 255, 0.1);
       border-color: var(--bs-info);
     }
 
+    /* Solid border once a file has been chosen (.has-file is meant to be toggled by JS) */
     #drop-zone.has-file {
       border-style: solid;
     }
@@ -33,22 +36,27 @@
 </head>
 
 <body class="d-flex flex-column min-vh-100 bg-dark">
+  <!-- Header: sticky navigation bar shared by every page -->
   <header class="container-fluid bg-secondary border-bottom border-light sticky-top">
     <nav class="navbar navbar-expand-lg" data-bs-theme="dark">
       <div class="container-fluid">
+        <!-- Brand: logo + site name, links back to the homepage -->
         <a class="navbar-brand d-flex align-items-center gap-2" href="index.html">
           <img src="./logo.png" class="img-thumbnail" width="50px" height="50px" alt="logo" />
           <span class="text-white">RPI Backtests</span>
         </a>
+        <!-- Hamburger button: toggles the collapsible nav on small screens -->
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarScroll"
           aria-controls="navbarScroll" aria-expanded="false" aria-label="Toggle navigation">
           <span class="navbar-toggler-icon"></span>
         </button>
         <div class="collapse navbar-collapse" id="navbarScroll">
+          <!-- Search box for finding courses (not wired up yet) -->
           <div class="input-group" role="group-search" style="width: 300px;">
             <input id="search-input" class="form-control me-2" type="search" placeholder="Search" value=""
               aria-label="Search">
           </div>
+          <!-- Page links (placeholders, no destinations yet); "Upload" is bold to mark the current page -->
           <ul class="navbar-nav ms-auto my-2 my-lg-0">
             <li class="nav-item">
               <a class="nav-link text-light fs-5 fw-bold" href="#" aria-current="page">Upload</a>
@@ -65,6 +73,7 @@
     </nav>
   </header>
 
+  <!-- Main: page title and upload form, centered with a max width -->
   <main class="container-fluid flex-grow-1 text-light py-5">
     <div class="mx-auto" style="max-width: 800px;">
       <div class="text-center mb-4">
@@ -72,12 +81,15 @@
         <p class="fs-5 fw-light mt-2 mb-0">All uploads are subject to review.</p>
       </div>
 
+      <!-- Upload form: file picker plus the course/exam details that identify the backtest -->
       <form id="upload-form" class="card bg-secondary" data-bs-theme="dark">
         <div class="card-body p-4 vstack gap-4">
 
           <!-- Document upload -->
           <div>
+            <!-- Hidden native file input. The drop zone below clicks it to open the file dialog -->
             <input id="file-input" type="file" class="d-none" accept=".pdf,.png,.jpg,.jpeg" />
+            <!-- Visible drag and drop target and click-to-browse area -->
             <div id="drop-zone" role="button" tabindex="0"
               class="d-flex flex-column align-items-center justify-content-center text-center p-4 gap-1">
               <span class="fs-1" aria-hidden="true">&#128196;</span>
@@ -88,6 +100,7 @@
 
           <!-- Course details -->
           <div class="row g-3">
+            <!-- Subject: department code (e.g. CSCI) -->
             <div class="col-md-4">
               <label for="subject" class="form-label fs-5 fw-medium">Subject</label>
               <select id="subject" class="form-select" required>
@@ -101,6 +114,7 @@
                 <option>ITWS</option>
               </select>
             </div>
+            <!-- Class: specific course, grouped by subject -->
             <div class="col-md-8">
               <label for="course" class="form-label fs-5 fw-medium">Class</label>
               <!-- TODO: only show classes for the selected subject -->
@@ -148,6 +162,7 @@
               </select>
             </div>
 
+            <!-- Exam, semester, and year the backtest is from -->
             <div class="col-md-4">
               <label for="exam" class="form-label fs-5 fw-medium">Exam</label>
               <select id="exam" class="form-select" required>
@@ -191,6 +206,7 @@
               </select>
             </div>
 
+            <!-- Professor: free-text name -->
             <div class="col-12">
               <label for="professor" class="form-label fs-5 fw-medium">Professor</label>
               <input id="professor" type="text" class="form-control" placeholder="e.g. Jane Smith" maxlength="100"
@@ -198,7 +214,7 @@
             </div>
           </div>
 
-          <!-- Actions -->
+          <!-- Actions: Clear resets every field, Upload submits the form -->
           <div class="d-flex flex-wrap align-items-center justify-content-between gap-3">
             <span class="fs-6 fw-light">All fields are required.</span>
             <div class="d-flex gap-2">
@@ -212,6 +228,7 @@
     </div>
   </main>
 
+  <!-- Footer: community links (Discord, GitHub), last-updated date, and copyright -->
   <footer class="container-fluid bg-secondary py-4">
     <div class="d-flex flex-column gap-2 align-items-center justify-content-center">
       <div id="contact-links" class="d-flex gap-4">
@@ -231,9 +248,10 @@
     const dropZone = document.getElementById('drop-zone');
     const fileInput = document.getElementById('file-input');
 
+    // Clicking the drop zone opens the hidden file input's file dialog
     dropZone.addEventListener('click', () => fileInput.click());
 
-    // TODO: drag & drop handling
+    // TODO: drag and drop handling
     // TODO: show selected file name/size in the drop zone
     // TODO: validate file type (PDF/PNG/JPG) and size (max 20 MB? (subject to change based on funding/server costs))
     // TODO: filter the class dropdown by the selected subject
