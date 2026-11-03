@@ -1,5 +1,6 @@
 package edu.rpi.backtests.services;
 
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.List;
@@ -11,7 +12,7 @@ import edu.rpi.backtests.dto.FileObject;
 import edu.rpi.backtests.storage.CloudflareR2Client;
 import software.amazon.awssdk.services.s3.model.S3Object;
 
-@Service // we will use mock data for now
+@Service
 public class FileService {
 
   private final CloudflareR2Client cloudflareR2Client;
@@ -20,23 +21,16 @@ public class FileService {
     this.cloudflareR2Client = cloudflareR2Client;
   }
 
-  /*
-   * private final List<FileObject> mockFiles = Arrays.asList(
-   * new FileObject("file1.csv", "text/csv", "https://example.com/file1.csv",
-   * LocalDateTime.now()),
-   * new FileObject("file2.csv", "text/csv", "https://example.com/file2.csv",
-   * LocalDateTime.now()),
-   * new FileObject("file3.csv", "text/csv", "https://example.com/file3.csv",
-   * LocalDateTime.now()));
-   */
-
+  // debugging function, not used by endpoints
   public List<FileObject> getFilesByName(String substring) {
-    // return mockFiles.stream().filter(file ->
-    // file.fileName().contains(substring)).collect(Collectors.toList());
     List<S3Object> s3Objects = cloudflareR2Client.listObjectsBasedOnPrefix(substring);
     return s3Objects.stream()
         .map(this::convertS3ObjectToFileObject) // method reference similar to passing a lambda function
         .collect(Collectors.toList());
+  }
+
+  public FileObject getFile(String key) {
+    return convertS3ObjectToFileObject(cloudflareR2Client.getObject(key));
   }
 
   public FileObject convertS3ObjectToFileObject(S3Object s3Object) {

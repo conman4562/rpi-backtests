@@ -1,4 +1,4 @@
-package edu.rpi.backtests.model;
+package edu.rpi.backtests.models;
 import jakarta.persistence.*;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
@@ -15,6 +15,9 @@ public class Course {
    @Column(nullable = false, unique = true, length = 20)
    private String code;
 
+   @Column(nullable = false)
+   private String name;
+
    @Column(name = "created_at", nullable = false, insertable = false, updatable = false)
    private OffsetDateTime createdAt;
 
@@ -23,10 +26,14 @@ public class Course {
 
    protected Course() {}
 
-   public Course(String code) { this.code = code; }
+   public Course(String code, String name) {
+      this.code = code;
+      this.name = name;
+   }
 
    public UUID getId() { return id; }
    public String getCode() { return code; }
+   public String getName() { return name; }
    public OffsetDateTime getCreatedAt() { return createdAt; }
    public List<BackTest> getTests() { return tests; }
 
