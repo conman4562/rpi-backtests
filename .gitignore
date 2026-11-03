@@ -144,3 +144,6 @@ vite.config.ts.timestamp-*
 
 .DS_Store
 /docs
+# other stuff
+*.DS_Store
+*.vscode
