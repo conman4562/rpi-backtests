@@ -1,2 +1,4 @@
 .env
 .vscode/
+backtests/
+automation_scripts/uploaded.log
