@@ -12,4 +12,6 @@ public interface BackTestRepository extends JpaRepository<BackTest, UUID> {
   List<BackTest> findByCourseId(UUID courseId);
   List<BackTest> findByCourseCode(String courseCode);
   Optional<BackTest> findByFileKey(String fileKey);
+  List<BackTest> findByApprovedFalse();
+  List<BackTest> findByCourseCodeAndApprovedTrue(String code);
 }

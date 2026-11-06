@@ -8,13 +8,12 @@ import org.springframework.beans.factory.annotation.Value;
 
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
 import software.amazon.awssdk.services.s3.model.GetObjectRequest;
-import software.amazon.awssdk.services.s3.model.GetObjectResponse;
 import software.amazon.awssdk.services.s3.model.HeadObjectRequest;
 import software.amazon.awssdk.services.s3.model.HeadObjectResponse;
 import software.amazon.awssdk.services.s3.model.ListObjectsV2Request;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
-import software.amazon.awssdk.services.s3.model.PutObjectResponse;
 import software.amazon.awssdk.services.s3.model.S3Object;
 import software.amazon.awssdk.services.s3.presigner.S3Presigner;
 import software.amazon.awssdk.services.s3.presigner.model.GetObjectPresignRequest;
@@ -81,6 +80,20 @@ public class CloudflareR2Client {
           bucketName, key);
       throw new RuntimeException(errorMessage, e);
     }
+  }
+
+  public void deleteObject(String key){
+   try{
+      DeleteObjectRequest request = DeleteObjectRequest.builder()
+         .bucket(bucketName)
+         .key(key)
+         .build();
+      
+      s3Client.deleteObject(request);
+   } catch(Exception e){
+      String errorMessage = String.format("Error occured deleting object %s from R2 bucket %s", key, bucketName);
+      throw new RuntimeException(errorMessage, e);
+   }
   }
 
   public String getContentType(String fileName) {
