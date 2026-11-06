@@ -33,7 +33,7 @@ public class BackTestService {
   }
 
   public List<BackTest> getTestsForCourse(String courseCode) {
-    return backTests.findByCourseCode(courseCode);
+    return backTests.findByCourseCodeAndApprovedTrue(courseCode);
   }
 
   public String getDownloadUrl(UUID testId) {

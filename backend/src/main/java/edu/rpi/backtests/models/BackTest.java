@@ -93,4 +93,5 @@ public class BackTest implements Persistable<UUID> {
    public OffsetDateTime getCreatedAt() { return createdAt; }
    public Course getCourse() { return course; }
    public String getFileKey() { return fileKey; }
+   public void approve() { this.approved = true; }
 }
