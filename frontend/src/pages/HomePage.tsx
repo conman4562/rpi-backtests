@@ -37,7 +37,7 @@ function HomePage() {
   const featureFieldRef = useRef<HTMLUListElement>(null)
 
   useBouncingBodies(heroRef, { speed: 120, onWallHit: cycleLogoColor })
-  useBouncingBodies(featureFieldRef, { speed: 90, collide: true })
+  useBouncingBodies(featureFieldRef, { speed: 90, collide: true, draggable: true })
 
   return (
     <>
@@ -120,6 +120,7 @@ function HomePage() {
               </li>
             ))}
           </ul>
+          <p className="feature-hint">Grab one and throw it.</p>
         </section>
       </main>
 
