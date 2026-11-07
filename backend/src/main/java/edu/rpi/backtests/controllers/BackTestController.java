@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import edu.rpi.backtests.dto.BacktestRequestObject;
 import edu.rpi.backtests.dto.BacktestResponseObject;
 import edu.rpi.backtests.models.BackTest;
 import edu.rpi.backtests.services.BackTestService;
@@ -43,6 +44,16 @@ public class BackTestController {
   @GetMapping("/backtests/files")
   public ResponseEntity<Map<String, String>> getFileDownload(@RequestParam UUID testId) {
     return ResponseEntity.ok(Map.of("url", backTestService.getDownloadUrl(testId)));
+  }
+
+  @PostMapping(value = "/backtests/files", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+  public ResponseEntity<BacktestResponseObject> uploadFile(
+    @RequestPart("file") MultipartFile file,
+    @RequestPart("request") BacktestRequestObject request
+  ) throws IOException {
+    BackTest backTest = backTestService.upload(file, request.uploader(), request.anonymous());
+    BacktestResponseObject created = BacktestResponseObject.convertBacktestObjectToBacktestResponseObject(backTest);
+    return ResponseEntity.status(HttpStatus.CREATED).body(created);
   }
 
   // This method is used to seed the database with backtests
