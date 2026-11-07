@@ -1,15 +1,22 @@
 package edu.rpi.backtests.dto;
 
+import edu.rpi.backtests.models.Semester;
+import edu.rpi.backtests.models.TestState;
+
 public record BacktestRequestObject(
     String courseCode,
-    String professorName,
-    String semester,
+    String professor,
+    Semester semester,
+    Integer year,
     String testType,
+    TestState state,
     String fileType,
-    byte[] fileData) {
+    String uploader,
+    Boolean anonymous
+  ) {
   public BacktestRequestObject {
-    if (fileData == null || fileData.length == 0) {
-      throw new IllegalArgumentException("File data cannot be null or empty");
+    if (anonymous) {
+      uploader = "anonymous";
     }
   }
 }
