@@ -1,8 +1,12 @@
 """Upload every backtest PDF in a folder to the backend's POST /backtests endpoint.
 
-The endpoint parses the file name (COURSE_PROFESSOR_YYYYMM_TESTTYPE_HASH.pdf), creates the
+The endpoint parses the file name (COURSE_PROFESSOR_YYYYMM_TESTTYPE_STATE_ID.pdf), creates the
 course if needed, stores the PDF in R2 and inserts the back_test row, so this script only has
 to send the files. Expected layout:  <backtests_dir>/<COURSE>/<file name>.pdf
+
+Malformed filenames and UNKNOWN course/state are held for review without uploading or
+recording them in uploaded.log. UNKNOWN professor, term and test type are allowed. States
+are BLANK, SOLUTION and USERFILLED (stored as FILLED); FILLED is also accepted.
 
 The endpoint isn't idempotent (uploading a file twice creates two rows), so each successful
 upload is recorded in uploaded.log next to this script and skipped on later runs. Delete that
@@ -19,6 +23,7 @@ Usage:
 
 import argparse
 import os
+import re
 import sys
 import urllib.error
 import urllib.request
@@ -62,6 +67,32 @@ def read_uploaded():
     return set(LOG_FILE.read_text(encoding="utf-8").splitlines())
 
 
+def filename_issue(pdf):
+    """Returns why a file needs review, or None when its metadata can be imported."""
+    parts = pdf.stem.split("_")
+    if len(parts) != 6 or any(not part.strip() for part in parts):
+        return "expected COURSE_PROFESSOR_YYYYMM_TESTTYPE_STATE_ID with six nonempty fields"
+    course, professor, term, _, state, _ = parts
+    if course.upper() == "UNKNOWN":
+        return "course is UNKNOWN"
+    if not re.fullmatch(r"[A-Z]{2,4}-[0-9]{4}", course):
+        return "invalid course code"
+    if state.upper() == "UNKNOWN":
+        return "state is UNKNOWN"
+    if state.upper() not in {"BLANK", "SOLUTION", "USERFILLED", "FILLED"}:
+        return "invalid exam state"
+    if professor.upper() != "UNKNOWN":
+        name = professor.split("-", 2)
+        if (len(name) != 3 or not name[0].strip() or not name[2].strip()
+                or not re.fullmatch(r"@|[A-Z]{1,3}", name[1])):
+            return "expected professor as Firstname-Middleinitial-Lastname"
+    if term.upper() != "UNKNOWN" and (
+        not re.fullmatch(r"[0-9]{6}", term) or term[4:] not in {"01", "05", "09"}
+    ):
+        return "expected term as YYYY01, YYYY05 or YYYY09"
+    return None
+
+
 def multipart_body(pdf, fields):
     """Builds a multipart/form-data body with the PDF as the 'file' part."""
     boundary = uuid.uuid4().hex
@@ -101,7 +132,7 @@ def main():
     ap.add_argument("backtests_dir", nargs="?", help="defaults to BACKTESTS_DIR from the environment or backend/.env")
     ap.add_argument("--url", default=read_env_var("BACKTESTS_API_URL") or DEFAULT_URL)
     ap.add_argument("--uploader", default="anonymous")
-    ap.add_argument("--dry-run", action="store_true", help="list what would be uploaded without sending anything")
+    ap.add_argument("--dry-run", action="store_true", help="show upload counts and held files without sending anything")
     ap.add_argument("--no-resume", action="store_true", help="upload files even if uploaded.log says they're done")
     args = ap.parse_args()
 
@@ -111,10 +142,20 @@ def main():
 
     pdfs = sorted(backtests_dir.glob("*/*.pdf"))
     done = set() if args.no_resume else read_uploaded()
-    todo = [pdf for pdf in pdfs if f"{pdf.parent.name}/{pdf.name}" not in done]
-    print(f"{len(pdfs)} PDFs found, {len(pdfs) - len(todo)} already uploaded, {len(todo)} to upload -> {args.url}")
+    pending = [pdf for pdf in pdfs if f"{pdf.parent.name}/{pdf.name}" not in done]
+    todo, held = [], []
+    for pdf in pending:
+        issue = filename_issue(pdf)
+        if issue:
+            held.append((pdf, issue))
+        else:
+            todo.append(pdf)
+    print(f"{len(pdfs)} PDFs found, {len(pdfs) - len(pending)} already uploaded, "
+          f"{len(held)} held for review, {len(todo)} to upload -> {args.url}")
+    for pdf, issue in held:
+        print(f"HELD {pdf.parent.name}/{pdf.name}: {issue}")
 
-    if args.dry_run:
+    if args.dry_run or not todo:
         return
 
     fields = {"uploader": args.uploader, "anonymous": "false"}
@@ -135,7 +176,7 @@ def main():
                 log.flush()
                 print(f"[{i}/{len(todo)}] ok {key}")
 
-    print(f"\n{len(todo) - len(failed)} uploaded, {len(failed)} failed")
+    print(f"\n{len(todo) - len(failed)} uploaded, {len(failed)} failed, {len(held)} held for review")
     for key, error in failed:
         print(f"  {key}: {error}")
     sys.exit(1 if failed else 0)

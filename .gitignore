@@ -1,4 +1,5 @@
 .env
 .vscode/
-backtests/
+/backtests/
 automation_scripts/uploaded.log
+automation_scripts/__pycache__/
