@@ -7,6 +7,8 @@ import jakarta.persistence.ManyToOne;
 import java.util.UUID;
 import java.time.OffsetDateTime;
 
+import org.hibernate.annotations.Generated;
+import org.hibernate.generator.EventType;
 import org.springframework.data.domain.Persistable;
 
 @Entity
@@ -51,6 +53,9 @@ public class BackTest implements Persistable<UUID> {
    @Column (name = "file_key", nullable = false, unique = true)
    private String fileKey;
 
+   // Set by the database default; @Generated makes Hibernate read it back after the insert,
+   // otherwise it stays null on a freshly saved entity (and the upload response rejects that)
+   @Generated(event = EventType.INSERT)
    @Column (name = "created_at", nullable = false, insertable = false, updatable = false)
    private OffsetDateTime createdAt;
 

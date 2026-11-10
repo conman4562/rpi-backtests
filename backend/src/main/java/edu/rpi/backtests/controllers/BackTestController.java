@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import edu.rpi.backtests.dto.BacktestRequestObject;
 import edu.rpi.backtests.dto.BacktestResponseObject;
 import edu.rpi.backtests.models.BackTest;
 import edu.rpi.backtests.services.BackTestService;
@@ -45,14 +46,12 @@ public class BackTestController {
     return ResponseEntity.ok(Map.of("url", backTestService.getDownloadUrl(testId)));
   }
 
-  // This method is used to seed the database with backtests
-  // The file name carries the course, professor, term and test type; see BackTestService.upload
-  @PostMapping(value = "/backtests", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-  public ResponseEntity<BacktestResponseObject> upload(
-      @RequestPart("file") MultipartFile file,
-      @RequestParam(defaultValue = "anonymous") String uploader,
-      @RequestParam(defaultValue = "false") Boolean anonymous) throws IOException {
-    BackTest backTest = backTestService.upload(file, uploader, anonymous);
+  @PostMapping(value = "/backtests/files", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+  public ResponseEntity<BacktestResponseObject> uploadFile(
+    @RequestPart("file") MultipartFile file,
+    @RequestPart("request") BacktestRequestObject request
+  ) throws IOException {
+    BackTest backTest = backTestService.studentUpload(file, request);
     BacktestResponseObject created = BacktestResponseObject.convertBacktestObjectToBacktestResponseObject(backTest);
     return ResponseEntity.status(HttpStatus.CREATED).body(created);
   }
