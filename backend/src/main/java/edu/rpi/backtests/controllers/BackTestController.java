@@ -57,7 +57,7 @@ public class BackTestController {
   }
 
   // This method is used to seed the database with backtests
-  // The file name carries the course, professor, term and test type; see BackTestService.upload
+  // The file name carries the course, professor, term, test type and state; see BackTestService.upload
   @PostMapping(value = "/backtests", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   public ResponseEntity<BacktestResponseObject> upload(
       @RequestPart("file") MultipartFile file,

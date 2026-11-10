@@ -5,6 +5,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Locale;
 import java.util.NoSuchElementException;
 import java.util.UUID;
 
@@ -45,8 +46,8 @@ public class BackTestService {
 
   /**
    * Creates a backtest from an uploaded file whose name follows
-   * COURSE_PROFESSOR_YYYYMM_TESTTYPE_HASH.pdf, e.g.
-   * ENGR-2090_A-S-Shahsavari_202009_3-SOLUTIONS_28b1.pdf.
+   * COURSE_PROFESSOR_YYYYMM_TESTTYPE_STATE_ID.pdf, e.g.
+   * MATH-4800_William-D-Henshaw_202009_EXAM-1_SOLUTION_5d109c65.pdf.
    * The file is stored in R2 under COURSE_<backtest id>.
    */
   public BackTest upload(MultipartFile file, String uploader, Boolean anonymous) throws IOException {
@@ -69,24 +70,52 @@ public class BackTestService {
   }
 
   private ParsedFileName parseFileName(String fileName) {
-    if (fileName == null) {
-      throw new IllegalArgumentException("Uploaded file has no name");
+    if (fileName == null || !fileName.toLowerCase(Locale.ROOT).endsWith(".pdf")) {
+      throw new IllegalArgumentException("Expected a PDF filename");
     }
-    String base = fileName.replaceFirst("\\.[^.]+$", ""); // drop the extension
-    String[] parts = base.split("_");
-    if (parts.length != 5) {
+    String base = fileName.substring(0, fileName.length() - 4);
+    String[] parts = base.split("_", -1);
+    if (parts.length != 6) {
       throw new IllegalArgumentException(
-          "Expected COURSE_PROFESSOR_YYYYMM_TESTTYPE_HASH, got: " + fileName);
+          "Expected COURSE_PROFESSOR_YYYYMM_TESTTYPE_STATE_ID, got: " + fileName);
     }
-    // parts[4] is the 4-character hash, which isn't stored
+    for (String part : parts) {
+      if (part.isBlank()) {
+        throw new IllegalArgumentException("Filename fields must not be empty: " + fileName);
+      }
+    }
+    // parts[5] identifies the source file; database IDs are generated separately.
 
     String courseCode = parts[0];
-    String professor = isUnknown(parts[1]) ? null : parts[1].replace('-', ' ');
+    if (isUnknown(courseCode)) {
+      throw new IllegalArgumentException("Course is UNKNOWN; review this file before uploading");
+    }
+    if (!courseCode.matches("[A-Z]{2,4}-[0-9]{4}")) {
+      throw new IllegalArgumentException("Expected a course code such as CSCI-1100, got: " + courseCode);
+    }
+
+    TestState state = switch (parts[4].toUpperCase(Locale.ROOT)) {
+      case "BLANK" -> TestState.BLANK;
+      case "SOLUTION" -> TestState.SOLUTION;
+      case "USERFILLED", "FILLED" -> TestState.FILLED;
+      case "UNKNOWN" -> throw new IllegalArgumentException("State is UNKNOWN; review this file before uploading");
+      default -> throw new IllegalArgumentException("Unknown exam state: " + parts[4]);
+    };
+
+    String professor = null;
+    if (!isUnknown(parts[1])) {
+      String[] name = parts[1].split("-", 3);
+      if (name.length != 3 || name[0].isBlank() || name[2].isBlank()
+          || !name[1].matches("@|[A-Z]{1,3}")) {
+        throw new IllegalArgumentException("Expected professor as Firstname-Middleinitial-Lastname, got: " + parts[1]);
+      }
+      professor = name[0] + (name[1].equals("@") ? " " : " " + name[1] + " ") + name[2];
+    }
 
     Integer year = null;
     Semester semester = null;
     if (!isUnknown(parts[2])) {
-      if (!parts[2].matches("\\d{6}")) {
+      if (!parts[2].matches("[0-9]{6}")) {
         throw new IllegalArgumentException("Expected term as YYYYMM, got: " + parts[2]);
       }
       year = Integer.parseInt(parts[2].substring(0, 4));
@@ -98,16 +127,7 @@ public class BackTestService {
       };
     }
 
-    // "3-SOLUTIONS" is the solutions to test 3
-    String testType = parts[3];
-    TestState state = TestState.BLANK;
-    if (testType.toUpperCase().endsWith("-SOLUTIONS")) {
-      state = TestState.SOLUTION;
-      testType = testType.substring(0, testType.length() - "-SOLUTIONS".length());
-    }
-    if (isUnknown(testType)) {
-      testType = null;
-    }
+    String testType = isUnknown(parts[3]) ? null : parts[3];
 
     return new ParsedFileName(courseCode, professor, year, semester, testType, state);
   }
