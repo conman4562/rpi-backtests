@@ -27,8 +27,8 @@ import java.util.stream.Collectors;
 @RestController
 @RequestMapping("/admin")
 public class AdminController {
-  private AdminService adminService;
-  private BackTestService backTestService;
+  private final AdminService adminService;
+  private final BackTestService backTestService;
 
   public AdminController(AdminService adminService, BackTestService backTestService) {
     this.adminService = adminService;
