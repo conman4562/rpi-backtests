@@ -51,19 +51,7 @@ public class BackTestController {
     @RequestPart("file") MultipartFile file,
     @RequestPart("request") BacktestRequestObject request
   ) throws IOException {
-    BackTest backTest = backTestService.upload(file, request.uploader(), request.anonymous());
-    BacktestResponseObject created = BacktestResponseObject.convertBacktestObjectToBacktestResponseObject(backTest);
-    return ResponseEntity.status(HttpStatus.CREATED).body(created);
-  }
-
-  // This method is used to seed the database with backtests
-  // The file name carries the course, professor, term and test type; see BackTestService.upload
-  @PostMapping(value = "/backtests", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-  public ResponseEntity<BacktestResponseObject> upload(
-      @RequestPart("file") MultipartFile file,
-      @RequestParam(defaultValue = "anonymous") String uploader,
-      @RequestParam(defaultValue = "false") Boolean anonymous) throws IOException {
-    BackTest backTest = backTestService.upload(file, uploader, anonymous);
+    BackTest backTest = backTestService.studentUpload(file, request);
     BacktestResponseObject created = BacktestResponseObject.convertBacktestObjectToBacktestResponseObject(backTest);
     return ResponseEntity.status(HttpStatus.CREATED).body(created);
   }
