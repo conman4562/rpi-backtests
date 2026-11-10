@@ -1,5 +1,7 @@
 package edu.rpi.backtests.services;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -23,7 +25,8 @@ public class BackTestService {
   private final BackTestRepository backTests;
   private final CourseRepository courses;
   private final CloudflareR2Client r2;
-
+  private final Logger logger = LoggerFactory.getLogger(BackTestService.class);
+  
   public BackTestService(BackTestRepository backTests, CourseRepository courses, CloudflareR2Client r2) {
     this.backTests = backTests;
     this.courses = courses;
@@ -40,14 +43,22 @@ public class BackTestService {
 
   public String getDownloadUrl(UUID testId) {
     BackTest test = backTests.findById(testId)
-        .orElseThrow(() -> new NoSuchElementException("No backtest with id: " + testId));
+        .orElseThrow(() -> {
+          logger.error("No backtest with id: {}", testId);
+          return new NoSuchElementException("No backtest with id: " + testId);
+        });
 
-    return r2.getDownloadUrl((test.getFileKey()));
+    String downloadUrl = r2.getDownloadUrl((test.getFileKey()));
+    logger.info("Download URL for backtest with id: {}", testId);
+    return downloadUrl;
   }
 
   public BackTest studentUpload(MultipartFile file, BacktestRequestObject testMetadata) throws IOException {
     Course course = courses.findByCode(testMetadata.courseCode())
-        .orElseGet(() -> courses.save(new Course(testMetadata.courseCode(), testMetadata.courseCode())));
+        .orElseGet(() -> {
+          logger.info("Course not found, creating new course: {}", testMetadata.courseCode());
+          return courses.save(new Course(testMetadata.courseCode(), testMetadata.courseCode()));
+        });
     BackTest test = new BackTest(
         course,
         testMetadata.semester(),
@@ -58,7 +69,10 @@ public class BackTestService {
         testMetadata.anonymous(),
         testMetadata.testType());
     r2.putObject(file.getOriginalFilename(), test.getFileKey(), file.getContentType(), file.getBytes());
-    return backTests.save(test);
+    logger.info("Uploaded file to R2 with key: {}", test.getFileKey());
+    BackTest savedTest = backTests.save(test);
+    logger.info("Saved new backtest: {}", savedTest.getId());
+    return savedTest;
   }
 
   /**
@@ -73,13 +87,19 @@ public class BackTestService {
     // TODO: course names aren't in the file name; the code stands in until a real
     // name is set
     Course course = courses.findByCode(parsed.courseCode())
-        .orElseGet(() -> courses.save(new Course(parsed.courseCode(), parsed.courseCode())));
+        .orElseGet(() -> {
+          logger.info("Course not found, creating new course: {}", parsed.courseCode());
+          return courses.save(new Course(parsed.courseCode(), parsed.courseCode()));
+        });
 
     BackTest test = new BackTest(course, parsed.semester(), parsed.professor(), parsed.state(),
         parsed.year(), uploader, anonymous, parsed.testType());
 
     r2.putObject(file.getOriginalFilename(), test.getFileKey(), file.getContentType(), file.getBytes());
-    return backTests.save(test);
+    logger.info("Uploaded file to R2 with key: {}", test.getFileKey());
+    BackTest savedTest = backTests.save(test);
+    logger.info("Saved new backtest: {}", savedTest.getId());
+    return savedTest;
   }
 
   private record ParsedFileName(String courseCode, String professor, Integer year, Semester semester,
@@ -93,11 +113,13 @@ public class BackTestService {
     String base = fileName.substring(0, fileName.length() - 4);
     String[] parts = base.split("_", -1);
     if (parts.length != 6) {
+      logger.error("Expected COURSE_PROFESSOR_YYYYMM_TESTTYPE_STATE_ID, got: {}", fileName);
       throw new IllegalArgumentException(
           "Expected COURSE_PROFESSOR_YYYYMM_TESTTYPE_STATE_ID, got: " + fileName);
     }
     for (String part : parts) {
       if (part.isBlank()) {
+        logger.error("Filename fields must not be empty: {}", fileName);
         throw new IllegalArgumentException("Filename fields must not be empty: " + fileName);
       }
     }
@@ -105,9 +127,11 @@ public class BackTestService {
 
     String courseCode = parts[0];
     if (isUnknown(courseCode)) {
+      logger.error("Course is UNKNOWN; review this file before uploading: {}", fileName);
       throw new IllegalArgumentException("Course is UNKNOWN; review this file before uploading");
     }
     if (!courseCode.matches("[A-Z]{2,4}-[0-9]{4}")) {
+      logger.error("Expected a course code in the format XXXX-YYYY, got: {}", courseCode);
       throw new IllegalArgumentException("Expected a course code such as CSCI-1100, got: " + courseCode);
     }
 
@@ -115,7 +139,10 @@ public class BackTestService {
       case "BLANK" -> TestState.BLANK;
       case "SOLUTION" -> TestState.SOLUTION;
       case "USERFILLED", "FILLED" -> TestState.FILLED;
-      case "UNKNOWN" -> throw new IllegalArgumentException("State is UNKNOWN; review this file before uploading");
+      case "UNKNOWN" -> {
+        logger.error("State is UNKNOWN; review this file before uploading: {}", fileName);
+        throw new IllegalArgumentException("State is UNKNOWN; review this file before uploading");
+      }
       default -> throw new IllegalArgumentException("Unknown exam state: " + parts[4]);
     };
 
@@ -124,6 +151,7 @@ public class BackTestService {
       String[] name = parts[1].split("-", 3);
       if (name.length != 3 || name[0].isBlank() || name[2].isBlank()
           || !name[1].matches("@|[A-Z]{1,3}")) {
+        logger.error("Expected professor as Firstname-Middleinitial-Lastname, got: {}", parts[1]);
         throw new IllegalArgumentException("Expected professor as Firstname-Middleinitial-Lastname, got: " + parts[1]);
       }
       professor = name[0] + (name[1].equals("@") ? " " : " " + name[1] + " ") + name[2];
@@ -133,6 +161,7 @@ public class BackTestService {
     Semester semester = null;
     if (!isUnknown(parts[2])) {
       if (!parts[2].matches("[0-9]{6}")) {
+        logger.error("Expected term as YYYYMM, got: {}", parts[2]);
         throw new IllegalArgumentException("Expected term as YYYYMM, got: " + parts[2]);
       }
       year = Integer.parseInt(parts[2].substring(0, 4));
@@ -140,12 +169,15 @@ public class BackTestService {
         case "01" -> Semester.SPRING;
         case "05" -> Semester.SUMMER;
         case "09" -> Semester.FALL;
-        default -> throw new IllegalArgumentException("Unknown term month in: " + parts[2]);
+        default -> {
+          logger.error("Unknown term month in: {}", parts[2]);
+          throw new IllegalArgumentException("Unknown term month in: " + parts[2]);
+        }
       };
     }
 
     String testType = isUnknown(parts[3]) ? null : parts[3];
-
+    logger.info("Parsed file name: {}", fileName);
     return new ParsedFileName(courseCode, professor, year, semester, testType, state);
   }
 
