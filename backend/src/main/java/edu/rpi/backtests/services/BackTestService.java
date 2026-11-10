@@ -9,6 +9,7 @@ import java.util.Locale;
 import java.util.NoSuchElementException;
 import java.util.UUID;
 
+import edu.rpi.backtests.dto.BacktestRequestObject;
 import edu.rpi.backtests.models.BackTest;
 import edu.rpi.backtests.models.Course;
 import edu.rpi.backtests.models.Semester;
@@ -44,13 +45,29 @@ public class BackTestService {
     return r2.getDownloadUrl((test.getFileKey()));
   }
 
+  public BackTest studentUpload(MultipartFile file, BacktestRequestObject testMetadata) throws IOException {
+    Course course = courses.findByCode(testMetadata.courseCode())
+        .orElseGet(() -> courses.save(new Course(testMetadata.courseCode(), testMetadata.courseCode())));
+    BackTest test = new BackTest(
+        course,
+        testMetadata.semester(),
+        testMetadata.professor(),
+        testMetadata.state(),
+        testMetadata.year(),
+        testMetadata.uploader(),
+        testMetadata.anonymous(),
+        testMetadata.testType());
+    r2.putObject(file.getOriginalFilename(), test.getFileKey(), file.getContentType(), file.getBytes());
+    return backTests.save(test);
+  }
+
   /**
    * Creates a backtest from an uploaded file whose name follows
    * COURSE_PROFESSOR_YYYYMM_TESTTYPE_STATE_ID.pdf, e.g.
    * MATH-4800_William-D-Henshaw_202009_EXAM-1_SOLUTION_5d109c65.pdf.
    * The file is stored in R2 under COURSE_<backtest id>.
    */
-  public BackTest upload(MultipartFile file, String uploader, Boolean anonymous) throws IOException {
+  public BackTest adminUpload(MultipartFile file, String uploader, Boolean anonymous) throws IOException {
     ParsedFileName parsed = parseFileName(file.getOriginalFilename());
 
     // TODO: course names aren't in the file name; the code stands in until a real
