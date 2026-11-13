@@ -37,7 +37,7 @@ class BackTestServiceTests {
   }
 
   private BackTest upload(String filename) throws Exception {
-    return service.upload(new MockMultipartFile("file", filename, "application/pdf",
+    return service.adminUpload(new MockMultipartFile("file", filename, "application/pdf",
         "%PDF-1.4\n".getBytes(StandardCharsets.UTF_8)), "test-uploader", false);
   }
 
