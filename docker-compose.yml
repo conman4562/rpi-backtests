@@ -1,0 +1,22 @@
+version: '1.0'
+
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    env_file:
+      - ./backend/.env
+    ports:
+      - {BACKEND_APP_PORT:-8080}:8080
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - {FRONTEND_APP_PORT:-80}:80
+    restart: unless-stopped
+    depends_on:
+      - backend
