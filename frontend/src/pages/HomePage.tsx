@@ -1,8 +1,6 @@
 import { useRef } from 'react'
 import Header from '../components/Header'
-import BacktestCard from '../components/BacktestCard'
 import { DiscordIcon, XIcon } from '../components/Icons'
-import { sampleBacktests } from '../fixtures/backtests'
 import logo from '../assets/rpi-backtests-logo.png'
 import { useBouncingBodies } from '../hooks/useBouncingBodies'
 import './HomePage.css'
@@ -75,16 +73,6 @@ function HomePage() {
               </a>
             </nav>
           </div>
-        </section>
-
-        <section className="sample-backtests" aria-labelledby="sample-backtests-heading">
-          <h2 id="sample-backtests-heading" className="section-label">
-            Sample backtest
-          </h2>
-          <p className="sample-backtests-description">
-            An example of how backtests will appear in the archive.
-          </p>
-          <BacktestCard backtest={sampleBacktests[0]} />
         </section>
 
         <section className="developers" aria-labelledby="dev-heading">
