@@ -1,0 +1,15 @@
+.backtest-card {
+  padding: 24px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+.backtest-card h3 {
+  margin: 0 0 12px;
+}
+
+.backtest-card p {
+  margin: 8px 0 0;
+  color: var(--text-muted);
+}
