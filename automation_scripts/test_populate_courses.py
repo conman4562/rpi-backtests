@@ -1,3 +1,11 @@
+"""Tests for populate_courses.py.
+
+No network: create_course() or urllib's urlopen is patched in every test that would send a
+request, and each catalog is a small JSON file written to a temp folder.
+
+Run from the repo root:  python -m unittest automation_scripts.test_populate_courses
+"""
+
 import contextlib
 import io
 import json
@@ -11,6 +19,7 @@ from automation_scripts import populate_courses as pc
 
 
 def run_main(*argv):
+    """Runs the script's main() with the given arguments; returns (exit code, printed output)."""
     output = io.StringIO()
     code = 0
     with patch("sys.argv", ["populate_courses.py", *argv]), contextlib.redirect_stdout(output):
@@ -27,6 +36,7 @@ class PopulateCoursesTests(unittest.TestCase):
         path.write_text(json.dumps(entries))
         return path
 
+    # Names are trimmed; empty names and values over the course table's column limits are rejected
     def test_load_courses_reports_entries_the_table_cannot_hold(self):
         with tempfile.TemporaryDirectory() as directory:
             path = self.write_catalog(directory, {
@@ -75,6 +85,7 @@ class PopulateCoursesTests(unittest.TestCase):
                 code, _ = run_main("--catalog", str(path), "--url", "http://example.invalid/courses")
         self.assertIn("can't reach", str(code))
 
+    # The next two check how real HTTP error responses from the backend are classified
     def test_create_course_recognizes_the_already_exists_response(self):
         body = io.BytesIO(b'{"error":"Course with code CSCI-1100 already exists"}')
         error = urllib.error.HTTPError("http://x/courses", 400, "Bad Request", {}, body)

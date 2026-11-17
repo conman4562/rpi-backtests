@@ -1,3 +1,11 @@
+"""Tests for script.py, the backtest uploader.
+
+No network: upload() is patched out, and each test builds throwaway PDFs in a temp folder and
+points LOG_FILE at a temp file, so the real uploaded.log is never touched.
+
+Run from the repo root:  python -m unittest automation_scripts.test_script
+"""
+
 import contextlib
 import io
 import tempfile
@@ -9,6 +17,8 @@ from automation_scripts import script
 
 
 class UploadScriptTests(unittest.TestCase):
+    # Only the well-formed file should be uploaded and logged; each held file breaks one rule
+    # (UNKNOWN course, UNKNOWN state, month 13, missing state field)
     def test_holds_unresolved_files_without_uploading_or_recording_them(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
@@ -38,6 +48,7 @@ class UploadScriptTests(unittest.TestCase):
             for pdf in held:
                 self.assertIn(pdf.name, output.getvalue())
 
+    # A dry run must not upload or rewrite uploaded.log, but should still report all three groups
     def test_dry_run_preserves_resume_log_and_reports_held_files(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
