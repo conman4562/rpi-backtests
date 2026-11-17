@@ -10,7 +10,7 @@ stop:
 	@docker stop rpi-backtests-backend-container
 
 remove:
-	@docker rm rpi-backtests-backend
+	@docker rm rpi-backtests-backend-container
 
 download-dependencies:
 	@./mvnw dependency:copy-dependencies
