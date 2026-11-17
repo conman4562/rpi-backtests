@@ -1,4 +1,8 @@
-"""Upload every backtest PDF in a folder to the backend's POST /backtests endpoint.
+"""Upload every backtest PDF in a folder to the backend's admin upload endpoint.
+
+Note: the backend now serves this at POST /admin/backtests/files, but DEFAULT_URL below still points
+at the old POST /backtests path. Pass --url http://127.0.0.1:8080/admin/backtests/files (or set
+BACKTESTS_API_URL) until the default is updated.
 
 The endpoint parses the file name (COURSE_PROFESSOR_YYYYMM_TESTTYPE_STATE_ID.pdf), creates the
 course if needed, stores the PDF in R2 and inserts the back_test row, so this script only has
@@ -30,8 +34,11 @@ import urllib.request
 import uuid
 from pathlib import Path
 
+# This file lives in <repo>/automation_scripts, so the repo root is two levels up
 REPO_ROOT = Path(__file__).resolve().parent.parent
+# Shared with the backend container; BACKTESTS_DIR and BACKTESTS_API_URL can be set here
 ENV_FILE = REPO_ROOT / "backend" / ".env"
+# One line per uploaded file ("COURSE/filename.pdf"); this is what makes re-runs resume
 LOG_FILE = Path(__file__).resolve().parent / "uploaded.log"
 # 127.0.0.1 rather than localhost: on Windows, localhost tries IPv6 first and Docker's IPv6 port forward hangs
 DEFAULT_URL = "http://127.0.0.1:8080/backtests"
@@ -62,13 +69,19 @@ def resolve_backtests_dir(arg):
 
 
 def read_uploaded():
+    """Returns the set of "COURSE/filename.pdf" keys already uploaded, from uploaded.log."""
     if not LOG_FILE.is_file():
         return set()
     return set(LOG_FILE.read_text(encoding="utf-8").splitlines())
 
 
 def filename_issue(pdf):
-    """Returns why a file needs review, or None when its metadata can be imported."""
+    """Returns why a file needs review, or None when its metadata can be imported.
+
+    This mirrors the checks the backend makes when it parses the name, so files it would reject
+    are caught here instead of costing a request (and an R2 upload) each.
+    Example of a valid name: CSCI-1100_Uzma-@-Mushtaque_202301_QUIZ-1_USERFILLED_12345678.pdf
+    """
     parts = pdf.stem.split("_")
     if len(parts) != 6 or any(not part.strip() for part in parts):
         return "expected COURSE_PROFESSOR_YYYYMM_TESTTYPE_STATE_ID with six nonempty fields"
@@ -81,11 +94,13 @@ def filename_issue(pdf):
         return "state is UNKNOWN"
     if state.upper() not in {"BLANK", "SOLUTION", "USERFILLED", "FILLED"}:
         return "invalid exam state"
+    # Professor is First-M-Last; "@" stands in for a missing middle initial
     if professor.upper() != "UNKNOWN":
         name = professor.split("-", 2)
         if (len(name) != 3 or not name[0].strip() or not name[2].strip()
                 or not re.fullmatch(r"@|[A-Z]{1,3}", name[1])):
             return "expected professor as Firstname-Middleinitial-Lastname"
+    # Term is YYYYMM where the month picks the semester: 01 spring, 05 summer, 09 fall
     if term.upper() != "UNKNOWN" and (
         not re.fullmatch(r"[0-9]{6}", term) or term[4:] not in {"01", "05", "09"}
     ):
@@ -94,7 +109,11 @@ def filename_issue(pdf):
 
 
 def multipart_body(pdf, fields):
-    """Builds a multipart/form-data body with the PDF as the 'file' part."""
+    """Builds a multipart/form-data body with the PDF as the 'file' part.
+
+    Built by hand so the script needs only the standard library (no requests package).
+    Each field becomes its own part; the random boundary separates the parts.
+    """
     boundary = uuid.uuid4().hex
     chunks = []
     for name, value in fields.items():
@@ -140,6 +159,7 @@ def main():
     if not backtests_dir.is_dir():
         ap.error(f"not a directory: {backtests_dir}")
 
+    # Split the PDFs into: already uploaded (skipped), held for review (bad names), and to upload
     pdfs = sorted(backtests_dir.glob("*/*.pdf"))
     done = set() if args.no_resume else read_uploaded()
     pending = [pdf for pdf in pdfs if f"{pdf.parent.name}/{pdf.name}" not in done]
@@ -158,6 +178,8 @@ def main():
     if args.dry_run or not todo:
         return
 
+    # Upload one file at a time. Each success is written to uploaded.log immediately (and flushed),
+    # so stopping partway loses nothing; a failure isn't logged, so the next run retries it.
     fields = {"uploader": args.uploader, "anonymous": "false"}
     failed = []
     with LOG_FILE.open("a", encoding="utf-8", newline="\n") as log:
