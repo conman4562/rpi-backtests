@@ -26,9 +26,12 @@ import urllib.request
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
+# Shares the catalog path, endpoint default and .env lookup with populate_courses.py. This import
+# works when the script is run directly, since Python puts the script's own folder on sys.path.
 from populate_courses import DEFAULT_CATALOG, DEFAULT_URL, read_env_var
 
 DEFAULT_OUT = Path(__file__).resolve().parent / "update_course_names.sql"
+# Sentinel for "course not in the database", distinct from any name (including an empty one)
 MISSING = object()
 
 
@@ -47,6 +50,7 @@ def stored_name(url, code):
 
 
 def sql_str(value):
+    """Quotes value as a SQL string literal; a single quote inside is escaped by doubling it."""
     return "'" + value.replace("'", "''") + "'"
 
 
@@ -77,6 +81,8 @@ def main():
     def check(code):
         return code, stored_name(args.url, code)
 
+    # A course needs an update only if its stored name is still its code (the placeholder a backtest
+    # upload gives it) and the catalog has a real name to replace it with
     updates, missing = [], []
     try:
         with ThreadPoolExecutor(max_workers=max(1, args.workers)) as pool:

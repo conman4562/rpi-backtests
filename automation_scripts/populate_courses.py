@@ -35,6 +35,8 @@ DEFAULT_URL = "http://127.0.0.1:8080/courses"
 MAX_CODE_LENGTH = 20
 MAX_NAME_LENGTH = 255
 
+# Outcomes of one POST. UNREACHABLE means the backend isn't answering at all, which stops the run;
+# FAILED is a single course that went wrong, which is reported and the run carries on.
 CREATED, EXISTS, FAILED, UNREACHABLE = "created", "exists", "failed", "unreachable"
 
 
@@ -82,6 +84,8 @@ def create_course(url, code, name):
             return CREATED, ""
     except urllib.error.HTTPError as err:
         detail = err.read().decode("utf-8", errors="replace").strip()
+        # CourseService.uploadCourse answers 400 "Course with code X already exists" for a duplicate;
+        # that's expected on a re-run, so it isn't a failure
         if err.code == 400 and "already exists" in detail:
             return EXISTS, ""
         return FAILED, f"HTTP {err.code}: {detail[:200]}"
@@ -112,6 +116,8 @@ def main():
     if args.dry_run or not courses:
         return
 
+    # Send several requests at once: each one is two round trips to the hosted database, so one at a
+    # time would take most of an hour for the full catalog. Results arrive in completion order.
     counts = {CREATED: 0, EXISTS: 0, FAILED: 0}
     failed = []
     with ThreadPoolExecutor(max_workers=max(1, args.workers)) as pool:
@@ -120,6 +126,7 @@ def main():
             code = futures[future]
             status, detail = future.result()
             if status == UNREACHABLE:
+                # Drop the queued requests rather than letting every one of them fail the same way
                 pool.shutdown(wait=True, cancel_futures=True)
                 sys.exit(f"\ncan't reach {args.url} ({detail}); is the backend running? "
                          f"{counts[CREATED]} created, {counts[EXISTS]} already existed before stopping; re-run to resume")
